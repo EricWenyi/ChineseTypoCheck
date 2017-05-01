@@ -4,28 +4,70 @@
 import collections
 import jieba
 
-f = open("/home/eric9/Desktop/Linux_markdown/12.md")
+
+f = open("./Data/File1.md")
 
 # build dictionary
-cnt = collections.Counter()
+WordFrequency = collections.Counter()
 
 # read files 
 file = f.read()
 
 # sement words
-seg_list = jieba.cut(file, cut_all=True)
+seg_list = jieba.cut(file, cut_all=False)
 
-# count numbiers
+# count numbers 
+# cnt is the 1d counter
+# WordsToIndex is a words-->index dictionary
+
+WordsToIndex = collections.defaultdict(int)
+counter = 0
+BigramCounter = collections.defaultdict(int)
+
 for word in seg_list:
-	cnt[word] += 1
+	# initalize my WordsToIndex
+	if word not in WordsToIndex:
+		WordsToIndex[word] = counter
+		counter = counter + 1
 
-# get length of dictionary
-length = len(cnt)
+	# initialize BigramCounter
+	if counter == 1:
+		PreviousWord = word
+	else:
+		BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
+		PreviousWord = word
 
-# get the order of the keys in a simple and easy way
-#well....
+	# initialize cnt
+	WordFrequency[word] += 1
 
-# get the bigram 2-dimential array
+"""
+for item in BigramCounter:
+	print(str(item) + str(BigramCounter[item]))
 
-my_list = [([0] * length) for i in range(length)]
+
+for item in WordsToIndex:
+	if WordsToIndex[item] == 37:
+		print("37:" + item)
+	if WordsToIndex[item] == 38:
+		print("38:" + item)
+
+"""
+
+# start another mapping from index to words
+# This is an array however
+IndexToWords = []
+
+for item in WordsToIndex:
+	IndexToWords.append(item)
+
+
+
+
+
+
+
+
+
+
+
 
