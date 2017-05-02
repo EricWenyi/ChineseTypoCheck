@@ -4,6 +4,9 @@
 import collections
 import jieba
 
+stop_symbols = [".", ",","。","#", "\n", "(", "、", "`", "，", "##","$","###","####", "-", "+","|","/"]
+
+
 
 f = open("./Data/File1.md")
 
@@ -34,7 +37,8 @@ for word in seg_list:
 	if counter == 1:
 		PreviousWord = word
 	else:
-		BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
+		if PreviousWord not in stop_symbols and word not in stop_symbols: 
+			BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
 		PreviousWord = word
 
 	# initialize cnt
@@ -59,6 +63,41 @@ IndexToWords = []
 
 for item in WordsToIndex:
 	IndexToWords.append(item)
+
+
+
+# handling with user input 
+f = open("./Test/File4.md")
+
+file = f.read()
+
+seg_list = jieba.cut(file,cut_all=False)
+
+SuspiciousList = []
+
+
+counter = False
+
+for word in seg_list:
+	if counter == False:
+		PreviousWord = word
+		counter = True
+	else:
+		if PreviousWord not in stop_symbols and word not in stop_symbols:
+			if BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] == 0:
+				SuspiciousList.append((PreviousWord,word))
+		PreviousWord = word
+
+print(SuspiciousList)
+
+
+
+
+
+
+
+
+
 
 
 
