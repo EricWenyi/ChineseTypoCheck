@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
 import collections
 import jieba
+import numpy as np
+import isIdealString
 
 stop_symbols = [".", ",","。","#", "\n", "(", "、", "`", "，", \
 "##","$","###","####", "-", "+","|","/", ":", "：","*","?","!","@", \
 "#"," ","\'","\"","\\",";","%",")","(","<",">","？","！","；","「","」","（","）" \
-"[","]","{","}","“","”","）","《","》"]
+"[","]","{","}","“","”","）","《","》","=","\t","】"]
 
-
-def isIdealString(word, PreviousWord):
-	if PreviousWord not in stop_symbols \
-	and word not in stop_symbols \
-	and not word.encode("UTF-8").isalpha() \
-	and not PreviousWord.encode("UTF-8").isalpha():
-		return True
-	else:
-		return False
 
 # calcualte the frequency of each word 
 WordFrequency = collections.Counter()
@@ -27,7 +20,7 @@ BigramCounter = collections.defaultdict(int)
 
 
 
-for i in range(2,3):
+for i in range(1,750):
 
 	f = open("../freecourse/File%d.md" % i)
 
@@ -55,12 +48,14 @@ for i in range(2,3):
 			PreviousWord = word
 		else:
 			if isIdealString(word,PreviousWord): 
-				print(word)
 				BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
 			PreviousWord = word
 
 		# initialize cnt
 		WordFrequency[word] += 1
+
+np.save('WordsToIndex.npy', WordsToIndex)
+np.save('BigramCounter.npy', BigramCounter)
 
 """
 for item in BigramCounter:
@@ -110,7 +105,7 @@ for word in seg_list:
 				SuspiciousList.append((PreviousWord,word))
 		PreviousWord = word
 
-
+print(SuspiciousList)
 
 
 
