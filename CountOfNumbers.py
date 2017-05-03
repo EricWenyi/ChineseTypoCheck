@@ -1,48 +1,66 @@
 # -*- coding: utf-8 -*-
-
-
 import collections
 import jieba
 
-stop_symbols = [".", ",","。","#", "\n", "(", "、", "`", "，", "##","$","###","####", "-", "+","|","/"]
+stop_symbols = [".", ",","。","#", "\n", "(", "、", "`", "，", \
+"##","$","###","####", "-", "+","|","/", ":", "：","*","?","!","@", \
+"#"," ","\'","\"","\\",";","%",")","(","<",">","？","！","；","「","」","（","）" \
+"[","]","{","}","“","”","）","《","》"]
 
 
+def isIdealString(word, PreviousWord):
+	if PreviousWord not in stop_symbols \
+	and word not in stop_symbols \
+	and not word.encode("UTF-8").isalpha() \
+	and not PreviousWord.encode("UTF-8").isalpha():
+		return True
+	else:
+		return False
 
-f = open("./Data/File1.md")
-
-# build dictionary
+# calcualte the frequency of each word 
 WordFrequency = collections.Counter()
 
-# read files 
-file = f.read()
-
-# sement words
-seg_list = jieba.cut(file, cut_all=False)
-
-# count numbers 
-# cnt is the 1d counter
-# WordsToIndex is a words-->index dictionary
-
 WordsToIndex = collections.defaultdict(int)
+
 counter = 0
 BigramCounter = collections.defaultdict(int)
 
-for word in seg_list:
-	# initalize my WordsToIndex
-	if word not in WordsToIndex:
-		WordsToIndex[word] = counter
-		counter = counter + 1
 
-	# initialize BigramCounter
-	if counter == 1:
-		PreviousWord = word
-	else:
-		if PreviousWord not in stop_symbols and word not in stop_symbols: 
-			BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
-		PreviousWord = word
 
-	# initialize cnt
-	WordFrequency[word] += 1
+for i in range(2,3):
+
+	f = open("../freecourse/File%d.md" % i)
+
+
+	# read files 
+	file = f.read()
+
+	# sement words
+	seg_list = jieba.cut(file, cut_all=False)
+
+	# count numbers 
+	# cnt is the 1d counter
+	# WordsToIndex is a words-->index dictionary
+
+
+
+	for word in seg_list:
+		# initalize my WordsToIndex
+		if word not in WordsToIndex:
+			WordsToIndex[word] = counter
+			counter = counter + 1
+
+		# initialize BigramCounter
+		if counter == 1:
+			PreviousWord = word
+		else:
+			if isIdealString(word,PreviousWord): 
+				print(word)
+				BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
+			PreviousWord = word
+
+		# initialize cnt
+		WordFrequency[word] += 1
 
 """
 for item in BigramCounter:
@@ -59,15 +77,19 @@ for item in WordsToIndex:
 
 # start another mapping from index to words
 # This is an array however
+
+"""
 IndexToWords = []
 
 for item in WordsToIndex:
 	IndexToWords.append(item)
-
+"""
 
 
 # handling with user input 
-f = open("./Test/File4.md")
+
+
+f = open("./Test/test.md")
 
 file = f.read()
 
@@ -83,13 +105,10 @@ for word in seg_list:
 		PreviousWord = word
 		counter = True
 	else:
-		if PreviousWord not in stop_symbols and word not in stop_symbols:
+		if isIdealString(word,PreviousWord):
 			if BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] == 0:
 				SuspiciousList.append((PreviousWord,word))
 		PreviousWord = word
-
-print(SuspiciousList)
-
 
 
 
