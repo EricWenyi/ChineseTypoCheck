@@ -1,6 +1,12 @@
 import jieba
 import numpy as np
 from isIdealString import * 
+import sys
+import urllib
+import urllib2
+from BeautifulSoup import BeautifulSoup
+
+
 
 WordsToIndex = np.load("WordsToIndex.npy").item()
 BigramCounter = np.load("BigramCounter.npy").item()
@@ -27,3 +33,4 @@ for word in seg_list:
 		PreviousWord = word
 
 print(len(SuspiciousList))
+
