@@ -2,11 +2,8 @@ import jieba
 import numpy as np
 from isIdealString import * 
 import sys
-import urllib
-import urllib2
-from BeautifulSoup import BeautifulSoup
-
-
+import CrawlTitle
+import time
 
 WordsToIndex = np.load("WordsToIndex.npy").item()
 BigramCounter = np.load("BigramCounter.npy").item()
@@ -32,5 +29,14 @@ for word in seg_list:
 				SuspiciousList.append((PreviousWord,word))
 		PreviousWord = word
 
-print(len(SuspiciousList))
+
+
+pairs = SuspiciousList[20]
+print(pairs)
+question_word = ""
+
+question_word += pairs[0]
+question_word += pairs[1]
+CrawlTitle.GetTitle(question_word)
+
 

@@ -2,7 +2,7 @@
 import collections
 import jieba
 import numpy as np
-import isIdealString
+from isIdealString import * 
 
 
 
