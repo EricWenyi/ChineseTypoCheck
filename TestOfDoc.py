@@ -4,6 +4,7 @@ from isIdealString import *
 import sys
 import CrawlTitle
 import time
+from CheckCorrectness import CheckCorrectness
 
 WordsToIndex = np.load("WordsToIndex.npy").item()
 BigramCounter = np.load("BigramCounter.npy").item()
@@ -19,24 +20,34 @@ SuspiciousList = []
 
 counter = False
 
+
+# get the word in the test doc 
 for word in seg_list:
 	if counter == False:
 		PreviousWord = word
 		counter = True
 	else:
-		if isIdealString(word,PreviousWord):
+		if isIdealString(word,PreviousWord): 
 			if BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] == 0:
 				SuspiciousList.append((PreviousWord,word))
 		PreviousWord = word
 
+print(SuspiciousList)
+
+time.sleep(5)
 
 
-pairs = SuspiciousList[20]
-print(pairs)
-question_word = ""
+# get the worong word according to the result of search
+WrongWordList = []
 
-question_word += pairs[0]
-question_word += pairs[1]
-CrawlTitle.GetTitle(question_word)
+for pairs in SuspiciousList:
+	question_word = ""
+	question_word += pairs[0]
+	question_word += pairs[1]
+	res, NeedAutoCorrection = CrawlTitle.GetTitle(question_word)
+	print(res)
+	if not CheckCorrectness(res, question_word) or NeedAutoCorrection:
+		WrongWordList.append(pairs)
+	time.sleep(0.5)
 
-
+print(WrongWordList)
