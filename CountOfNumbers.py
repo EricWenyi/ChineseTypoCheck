@@ -8,7 +8,7 @@ from isIdealString import *
 
 
 # calcualte the frequency of each word 
-WordFrequency = collections.Counter()
+# WordFrequency = collections.Counter()
 
 WordsToIndex = collections.defaultdict(int)
 
@@ -48,8 +48,8 @@ for i in range(1,750):
 				BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] += 1
 			PreviousWord = word
 
-		# initialize cnt
-		WordFrequency[word] += 1
+		# initialize WordFrequency
+		# WordFrequency[word] += 1
 
 np.save('WordsToIndex.npy', WordsToIndex)
 np.save('BigramCounter.npy', BigramCounter)
@@ -80,29 +80,6 @@ for item in WordsToIndex:
 
 # handling with user input 
 
-
-f = open("./Test/test.md")
-
-file = f.read()
-
-seg_list = jieba.cut(file,cut_all=False)
-
-SuspiciousList = []
-
-
-counter = False
-
-for word in seg_list:
-	if counter == False:
-		PreviousWord = word
-		counter = True
-	else:
-		if isIdealString(word,PreviousWord):
-			if BigramCounter[WordsToIndex[PreviousWord],WordsToIndex[word]] == 0:
-				SuspiciousList.append((PreviousWord,word))
-		PreviousWord = word
-
-print(SuspiciousList)
 
 
 
