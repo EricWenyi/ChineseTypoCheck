@@ -6,8 +6,8 @@ import CrawlTitle
 import time
 from CheckCorrectness import CheckCorrectness
 
-WordsToIndex = np.load("WordsToIndex.npy").item()
-BigramCounter = np.load("BigramCounter.npy").item()
+WordsToIndex = np.load("Test1_WordsToIndex.npy").item()
+BigramCounter = np.load("Test1_BigramCounter_test.npy").item()
 
 f = open("./Test/test.md")
 
@@ -38,6 +38,8 @@ time.sleep(5)
 
 
 # get the worong word according to the result of search
+
+
 WrongWordList = []
 
 for pairs in SuspiciousList:
@@ -51,3 +53,6 @@ for pairs in SuspiciousList:
 	time.sleep(0.5)
 
 print(WrongWordList)
+print(len(WrongWordList))
+
+
