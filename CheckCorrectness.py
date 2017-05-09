@@ -11,7 +11,7 @@ def CheckCorrectness(res, question_word):
 		if content.find(question_word) != -1:
 			counter += 1
 
-	if counter > 4:
+	if counter > 3:
 		return True
 	else:
 		return False

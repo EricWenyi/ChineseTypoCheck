@@ -5,11 +5,18 @@ import sys
 import CrawlTitle
 import time
 from CheckCorrectness import CheckCorrectness
+import ToHTML
+import sys
+
+if len(sys.argv) < 3:
+    print("Wrong parameter")
+    print("./copyfile.py Input_File_Name Output_File_Name(.html file)")
+    sys.exit(1)
 
 WordsToIndex = np.load("Test1_WordsToIndex.npy").item()
 BigramCounter = np.load("Test1_BigramCounter_test.npy").item()
 
-f = open("./Test/test.md")
+f = open(sys.argv[1])
 
 file = f.read()
 
@@ -33,8 +40,10 @@ for word in seg_list:
 		PreviousWord = word
 
 print(SuspiciousList)
+print(len(SuspiciousList))
+print("\n")
 
-time.sleep(5)
+time.sleep(1)
 
 
 # get the worong word according to the result of search
@@ -47,7 +56,7 @@ for pairs in SuspiciousList:
 	question_word += pairs[0]
 	question_word += pairs[1]
 	res, NeedAutoCorrection = CrawlTitle.GetTitle(question_word)
-	print(res)
+	# print(res)
 	if not CheckCorrectness(res, question_word) or NeedAutoCorrection:
 		WrongWordList.append(pairs)
 	time.sleep(0.5)
@@ -55,4 +64,4 @@ for pairs in SuspiciousList:
 print(WrongWordList)
 print(len(WrongWordList))
 
-
+ToHTML.ToHTML(file,sys.argv[2], WrongWordList)

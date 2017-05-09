@@ -1,0 +1,220 @@
+<h1>“关键字”法完成新闻摘要提取</h1>
+<p>我们现在浏览新闻，一般都会看标题 ( title ) 和新闻简介 ( summary ) 来判断我们是否对这则新闻感兴趣。之前的新闻简介都是由编辑手动提取的，现在自然语言处理 (Natural Language Processing, NLP) 技术发展日益成熟，我们发现计算机提取的摘要也可圈可点。</p>
+<h2>一、实验简介</h2>
+<h3>1.1 实验内容</h3>
+<p>主要完成一个相对简单的“关键字提取”算法，关注的是实现的过程，让同学们对自然语言处理有个大致的了解。</p>
+<h3>1.2 实验知识点</h3>
+<ul>
+<li>Python基础知识</li>
+<li>“关键字提取”算法</li>
+</ul>
+<h3>1.3 实验环境</h3>
+<ul>
+<li>Xfce终端</li>
+<li>python3</li>
+</ul>
+<h3>1.4 实验效果</h3>
+<p>原文标题： <strong>'Middle age Health Crisis' Warning</strong></p>
+<p><a href="http://www.bbc.com/news/health-38402655">原文链接</a></p>
+<p>这是我们的算法提取的摘要。</p>
+<blockquote><p>"Modern life is dramatically different to even 30 years ago," Prof Gray told Radio 4's Today programme, "people now drive to work and sit at work."</p>
+<p>"The How Are You Quiz will help anyone who wants to take a few minutes to take stock and find out quickly where they can take a little action to make a big difference to their health."</p>
+</blockquote>
+<p>我们的算法为我们选出了最具代表性的两句句子。</p>
+<h2>二、实验步骤</h2>
+<h3>2.1 准备工作</h3>
+<p>我们这次实验都是在python3中进行。首先我们需要安装NLTK (Natural Language ToolKit) .
+我们打开终端，在命令行中输入</p>
+<pre><code>sudo pip3 install nltk
+</code></pre>
+<p>然后进入python3的交互界面，在命令行中输入</p>
+<pre><code>python3
+</code></pre>
+<p>应该就有python的提示符出现。</p>
+<p><img src="https://dn-anything-about-doc.qbox.me/document-uid122063labid2480timestamp1482911225849.png/wm" alt="此处输入图片的描述"></p>
+<p>请注意一定是要在python3环境下。</p>
+<p>NLTK 是建设一个Python程序与人类语言数据工作平台。它提供了易于使用的接口，超过50的语料库和词汇资源，如WordNet，连同一套文本处理库的分类、标记、标注、句法分析、语义推理的NLP库，和一个活跃的论坛。</p>
+<p>要注意的是我们这次使用的一些词汇资源并不在原生的 NLTK 库中，需要我们另行下载。</p>
+<p>在python 交互环境中，我们输入如下的代码来下载我们本次实现需要的资源。</p>
+<pre><code>&gt;&gt;&gt; import nltk
+&gt;&gt;&gt; nltk.download('stopwords')
+&gt;&gt;&gt; nltk.download('punkt')
+</code></pre>
+<p><code>**注意:此步操作需要访问外部网络**</code>非会员用户使用在线环境无法完成操作。如果download函数长时间不响应的话，按ctrl+z退出python3交互环境，重新下载。</p>
+<p>之后我们在桌面上新建一个文件夹NewsSummary</p>
+<pre><code>mkdir NewsSummary
+</code></pre>
+<p>在NewsSummary中用vim创建<code>NewsSummary1.py</code>文件</p>
+<p>先导入我们需要的包</p>
+<pre><code class="lang-python">from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+from collections import defaultdict
+from string import punctuation
+from heapq import nlargest
+</code></pre>
+<p><strong>nltk.tokenize</strong> 是NLTK提供的分词工具包。所谓的分词 (tokenize) 实际就是把段落分成句子，把句子分成一个个单词的过程。我们导入的 <strong>sent_tokenize()</strong> 函数对应的是分段为句。 <strong>word_tokenize()</strong>函数对应的是分句为词。</p>
+<p><strong>stopwords</strong> 是一个列表，包含了英文中那些频繁出现的词，如am, is, are。</p>
+<p><strong>defaultdict</strong> 是一个带有默认值的字典容器。</p>
+<p><strong>puctuation</strong> 是一个列表，包含了英文中的标点和符号。</p>
+<p><strong>nlargest()</strong> 函数可以很快地求出一个容器中最大的n个数字。</p>
+<p>至此我们完成了我们的准备工作。</p>
+<h3>2.2 思路解析</h3>
+<p>我们的基本思想很简单：拥有关键词最多的句子就是最重要的句子。我们把句子按照关键词数量的多少排序，取前n句，即可汇总成我们的摘要。</p>
+<p>所以我们的工作可以分为如下步骤：</p>
+<ul>
+<li>给在文章中出现的单词按照算法计算出<strong>重要性</strong></li>
+<li>按照句子中单词的<strong>重要性</strong>算出句子的总分</li>
+<li>按照句子的总分给文章中的每个句子排序</li>
+<li>取出前n个句子作为摘要</li>
+</ul>
+<p>我们就按照这这个思路写我们的模块。</p>
+<h3>2.3 词频统计</h3>
+<p>首先我们先要统计出每个词在文章中出现的次数，在统计出次数之后，我们可以知道出现次数最多的词的出现次数 m 。我们把每个词 wi 出现的次数 mi 除以 m ，算出每个词的“重要系数”。</p>
+<p>我们举个例子。
+"I am a fool, big fool." 这句句子中</p>
+<table>
+<thead><tr>
+<th>I</th>
+<th style="text-align:left">am</th>
+<th style="text-align:left">a</th>
+<th style="text-align:left">fool</th>
+<th style="text-align:left">big</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">1</td>
+</tr>
+</tbody>
+</table>
+<p>出现最多的是 'fool' 这个单词，所以 m 是2。所有单词的频率都除以m，可以获得新的表</p>
+<table>
+<thead><tr>
+<th>I</th>
+<th style="text-align:left">am</th>
+<th style="text-align:left">a</th>
+<th style="text-align:left">fool</th>
+<th style="text-align:left">big</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.5</td>
+<td style="text-align:left">0.5</td>
+<td style="text-align:left">0.5</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">0.5</td>
+</tr>
+</tbody>
+</table>
+<p>这张表显示的就是每个词的<strong>重要性</strong>。重要性高的词就是我们的关键词。</p>
+<p>我们先定一些我们需要的常量</p>
+<pre><code>stopwords = set(stopwords.words('english') + list(punctuation))
+max_cut = 0.9
+min_cut = 0.1
+</code></pre>
+<p>首先是我们的<strong>stopwords</strong>。</p>
+<p>stopwords包含的是我们在日常生活中会遇到的出现频率很高的词，如do, I, am, is, are等等，这种词汇是不应该算是我们的关键字。同样的标点符号（punctuation）也不能被算作是关键字。</p>
+<p><strong>max_cut</strong> 变量限制了在文本中出现重要性过高的词。就像在跳水比赛中会去掉最高分和最低分一样。我们也需要去掉那些重要性过高和过低的词来提升算法的效果。</p>
+<p>同理，<strong>min_cut</strong> 限制了出现频率过低的词。</p>
+<pre><code class="lang-python">&quot;&quot;&quot;
+计算出每个词出现的频率
+word_sent 是一个已经分好词的列表
+返回一个词典freq[],
+freq[w]代表了w出现的频率
+&quot;&quot;&quot;
+def compute_frequencies(word_sent):
+    &quot;&quot;&quot;
+    defaultdict和普通的dict
+    的区别是它可以设置default值
+    参数是int默认值是0
+    &quot;&quot;&quot;
+    freq = defaultdict(int)
+
+    #统计每个词出现的频率
+    for s in word_sent:
+        for word in s:
+            #注意stopwords
+            if word not in stopwords:
+                freq[word] += 1
+
+    #得出最高出现频次m
+    m = float(max(freq.values()))
+    #所有单词的频次统除m
+    for w in list(freq.keys()):
+        freq[w] = freq[w]/m
+        if freq[w] &gt;= max_cut or freq[w] &lt;= min_cut:
+            del freq[w]
+    # 最后返回的是
+    # {key:单词, value: 重要性}
+    return freq
+</code></pre>
+<h3>2.4 获得摘要</h3>
+<p>现在每个单词（stopwords和出现频率异常的单词除外）都有了“重要性”这样一个量化描述的值。我们现在需要统计的是一个句子中单词的重要性。只需要把句子中每个单词的重要性叠加就行了。</p>
+<pre><code>def summarize(text, n):
+    """
+    用来总结的主要函数
+    text是输入的文本
+    n是摘要的句子个数
+    返回包含摘要的列表
+    """
+
+    # 首先先把句子分出来
+    sents = sent_tokenize(text)
+    assert n &lt;= len(sents)
+
+    # 然后再分词
+    word_sent = [word_tokenize(s.lower()) for s in sents]
+
+    # freq是一个词和词重要性的字典
+    freq = compute_frequencies(word_sent)
+    #ranking则是句子和句子重要性的词典
+    ranking = defaultdict(int)
+    for i, word in enumerate(word_sent):
+        for w in word:
+            if w in freq:
+                ranking[i] += freq[w]
+    sents_idx = rank(ranking, n)
+    return [sents[j] for j in sents_idx]
+
+"""
+考虑到句子比较多的情况
+用遍历的方式找最大的n个数比较慢
+我们这里调用heapq中的函数
+创建一个最小堆来完成这个功能
+返回的是最小的n个数所在的位置
+"""    
+def rank(ranking, n):
+    return nlargest(n, ranking, key=ranking.get)
+</code></pre>
+<h3>2.5 运行程序</h3>
+<p>最后加入我们的<strong>main</strong>()</p>
+<pre><code class="lang-python">if __name__ == &#39;__main__&#39;:
+    with open(&quot;news.txt&quot;, &quot;r&quot;) as myfile:
+        text = myfile.read().replace(&#39;\n&#39;,&#39;&#39;)
+    res = summarize(text, 2)
+    for i in range(len(res)):
+        print(res[i])
+</code></pre>
+<p>这里我们提供了一个样本news.txt。可以在命令行中输入</p>
+<pre><code>wget http://labfile.oss.aliyuncs.com/courses/741/news.txt
+</code></pre>
+<p>来获取</p>
+<p>我们先看一看我们的原文</p>
+<p><img src="https://dn-anything-about-doc.qbox.me/document-uid122063labid2480timestamp1482921755786.png/wm" alt="此处输入图片的描述"><img src="https://dn-anything-about-doc.qbox.me/document-uid122063labid2480timestamp1482921756536.png/wm" alt="此处输入图片的描述"><img src="https://dn-anything-about-doc.qbox.me/document-uid122063labid2480timestamp1482921756749.png/wm" alt="此处输入图片的描述"><img src="https://dn-anything-about-doc.qbox.me/document-uid122063labid2480timestamp1482921757004.png/wm" alt="此处输入图片的描述"></p>
+<p>我们在来看一下我们获取的摘要：</p>
+<blockquote><p>"Modern life is dramatically different to even 30 years ago," Prof Gray told Radio 4's Today programme, "people now drive to work and sit at work."</p>
+<p>"The How Are You Quiz will help anyone who wants to take a few minutes to take stock and find out quickly where they can take a little action to make a big difference to their health."</p>
+</blockquote>
+<h2>三、实验总结</h2>
+<p>我们的方法只是单纯的叠加重要性，导致长句子占有优势。下一个实验我们需要重新制定算法来计算我们的摘要句子。</p>
+<h2>四、实验代码</h2>
+<p>在命令行中输入</p>
+<pre><code>wget http://labfile.oss.aliyuncs.com/courses/741/NewsSummary1.py
+</code></pre>
+<p>可获得实验源码</p>
+

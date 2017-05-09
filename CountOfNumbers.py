@@ -6,7 +6,6 @@ from isIdealString import *
 
 
 
-
 # calcualte the frequency of each word 
 # WordFrequency = collections.Counter()
 
