@@ -3,6 +3,7 @@ import mistune
 
 def AddWrongWord(htmlpage, WrongWordList):
 	InsertPosition = []
+	flag = -1
 	for item in WrongWordList:
 		WrongWords = ""
 		WrongWords += item[0]
@@ -11,12 +12,20 @@ def AddWrongWord(htmlpage, WrongWordList):
 		Ins_start = htmlpage.find(WrongWords)
 
 		if Ins_start == -1:
-			print("Cannot find the Wrong Word" + item[0] + item[1])
+			print("Cannot find the Wrong Word" + WrongWords)
 			continue
 		else:
-			Ins_end = Ins_start + len(WrongWords)
+			if Ins_start > flag :
+				Ins_end = Ins_start + len(WrongWords)
+				flag = Ins_end
+			else:
+				Ins_end = Ins_start + len(WrongWords)
+				Ins_start = flag
+				flag = Ins_end
 
 		InsertPosition.append((Ins_start,Ins_end))
+
+	
 
 	NewPage = ""
 	PreviousStart = 0
